@@ -1,5 +1,9 @@
 # Enterprise AI Document Processing & Interactive Approval Workflow
 
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/5280a748-920d-4d5f-a0f7-3d98ae596be7" />
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/6b7f3f9f-2509-4b3b-9ed0-592eae8e5f0a" />
+
 ## Executive Summary
 This project showcases a fully automated, end-to-end document processing and approval system built with **n8n**. It eliminates manual data entry by intercepting incoming emails, extracting critical data using AI, and routing approval requests to management via interactive Telegram buttons. 
 
