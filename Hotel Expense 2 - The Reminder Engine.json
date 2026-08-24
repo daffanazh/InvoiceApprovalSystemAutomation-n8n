@@ -1,0 +1,432 @@
+{
+  "name": "Hotel Expense 2 - The Reminder Engine",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const callbackData = $input.first().json.callback_query.data;\nconst rowIndex = callbackData.replace('approve_', '');\nconst chatId = $input.first().json.callback_query.message.chat.id;\nreturn { rowIndex, chatId };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "8b11d25e-3619-4b7c-83ed-7e29cc52045c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1HIzrrdlPBUMt1GHTz-0jm068RLceEWJiD84stgdY9eY",
+          "mode": "list",
+          "cachedResultName": "Database Invoice Penagihan Hotel Aston",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HIzrrdlPBUMt1GHTz-0jm068RLceEWJiD84stgdY9eY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HIzrrdlPBUMt1GHTz-0jm068RLceEWJiD84stgdY9eY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.rowIndex }}",
+            "status": "APPROVED"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "time_in",
+              "displayName": "time_in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "vendor",
+              "displayName": "vendor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_bill",
+              "displayName": "total_bill",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "arsip_link",
+              "displayName": "arsip_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        0
+      ],
+      "id": "6aeee551-a30b-46c2-b47f-962a4535c4f6",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3eqxTxT8G267QQig",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Code in JavaScript').first().json.chatId }}",
+        "text": "=✅ Berhasil! Tagihan baris ke-{{ $('Code in JavaScript').first().json.chatId }} telah disetujui.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        0
+      ],
+      "id": "db67a746-1664-4494-ae31-3d521bd7ccde",
+      "name": "Send a text message",
+      "webhookId": "f890eabe-6e36-42c6-96d7-f987a384f76d",
+      "credentials": {
+        "telegramApi": {
+          "id": "jmA3BKVAeOUzknzW",
+          "name": "Telegram account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "daffanazhmi1@gmail.com",
+        "subject": "Tagihan Disetujui - Pembayaran Diproses",
+        "message": "=Halo, Tagihan Anda sudah kami setujui dan akan segera ditransfer. Terima kasih!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        0
+      ],
+      "id": "69a1919d-2b8d-4e29-9c1d-d091e56212e2",
+      "name": "Send a message",
+      "webhookId": "16322209-7d59-4c34-ba66-27236443778c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Yvn1V0eci7Jzh7Na",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "callback_query",
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -480,
+        -80
+      ],
+      "id": "c33ac164-aecb-4b21-9fe2-bd85a57c9030",
+      "name": "Telegram Trigger",
+      "webhookId": "09c9cba7-b9b0-4e59-add4-fb1272f6ace6",
+      "credentials": {
+        "telegramApi": {
+          "id": "jmA3BKVAeOUzknzW",
+          "name": "Telegram account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message ? 'teks' : 'tombol' }}",
+                    "rightValue": "teks",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0488b426-c530-44f4-8e2c-c6590ea62c41"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9d312992-cfb8-4381-95a1-ce6024e483fa",
+                    "leftValue": "={{ $json.message ? 'teks' : 'tombol' }}",
+                    "rightValue": "tombol",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -272,
+        -80
+      ],
+      "id": "2c2e4626-d60c-49a0-a867-323e8f6453ed",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1HIzrrdlPBUMt1GHTz-0jm068RLceEWJiD84stgdY9eY",
+          "mode": "list",
+          "cachedResultName": "Database Invoice Penagihan Hotel Aston",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HIzrrdlPBUMt1GHTz-0jm068RLceEWJiD84stgdY9eY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HIzrrdlPBUMt1GHTz-0jm068RLceEWJiD84stgdY9eY/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "PENDING_REVIEW"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -64,
+        -208
+      ],
+      "id": "a55d079d-6051-4b52-8ba9-3a3728b360f2",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3eqxTxT8G267QQig",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "=🚨 *TAGIHAN MENUNGGU PERSETUJUAN* 🚨\n\nVendor: *{{ $json.vendor }}*\nTotal: *Rp {{ $json.total_bill }}*\nDokumen: [Cek di sini]({{ $json.arsip_link }})",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Approve",
+                    "additionalFields": {
+                      "callback_data": "=approve_{{ $json.row_number }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        -208
+      ],
+      "id": "5d87469d-abfb-41fc-a9ed-e3d73db8b2b3",
+      "name": "Send a text message1",
+      "webhookId": "8a5d1f42-7a1e-4b6c-ba27-e1ea6db68689",
+      "credentials": {
+        "telegramApi": {
+          "id": "jmA3BKVAeOUzknzW",
+          "name": "Telegram account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "29d875dc-b191-4330-adac-d85a4fe86963",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"
+  },
+  "nodeGroups": [],
+  "id": "LFyQ5IZ85cOdPXqw",
+  "tags": []
+}

@@ -1,0 +1,289 @@
+{
+  "name": "Hotel Expense - Record Invoice Automator",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "has:attachment",
+          "readStatus": "unread"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -320,
+        -96
+      ],
+      "id": "6050bb01-aece-4639-9e03-b644a3e04c50",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Yvn1V0eci7Jzh7Na",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "attachment_0",
+        "name": "=Invoice_{{ $now.format('YYYY-MM-DD_HH-mm') }}.pdf",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1GcEC0xZViYvvwqIbncdoTh_jbmrHPTDx",
+          "mode": "list",
+          "cachedResultName": "INVOICE RECORD",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1GcEC0xZViYvvwqIbncdoTh_jbmrHPTDx"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -112,
+        -176
+      ],
+      "id": "8b60fc9d-d8a3-4c41-9520-92e4c2f809f9",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "hGZSYf0pqZp19lyk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemma-4-26b-a4b-it",
+          "mode": "list",
+          "cachedResultName": "models/gemma-4-26b-a4b-it"
+        },
+        "text": "Kamu adalah AI Kepala Akuntan di sebuah Hotel.\nTugasmu membaca dokumen tagihan/invoice yang dilampirkan dan mengekstrak informasinya.\n\nATURAN MUTLAK:\n- Keluarkan HANYA teks JSON mentah (raw JSON).\n- JANGAN gunakan pembungkus markdown sama sekali (DILARANG pakai ```json atau ```).\n- JANGAN berikan teks pengantar, catatan, maupun penjelasan tambahan di luar JSON.\n\nGunakan format JSON persis seperti ini:\n{\n  \"vendor_name\": \"Nama perusahaan supplier\",\n  \"invoice_date\": \"Tanggal tagihan (YYYY-MM-DD)\",\n  \"grand_total\": \"Total tagihan akhir yang harus dibayar (HANYA ANGKA BULAT, hilangkan titik/koma/Rp)\",\n  \"department\": \"Tebak divisi apa yang menggunakan barang/layanan ini (Pilih salah satu yang paling mendekati: IT / Marketing / Front Office / F&B / Housekeeping / Maintenance / Operasional / Lainnya)\",\n  \"butuh_cek_manual\": false\n}\nCatatan: Jika gambar buram, tulisan tangan tidak terbaca jelas, atau kamu ragu dengan angkanya, ubah nilai \"butuh_cek_manual\" menjadi true dan isi \"grand_total\" dengan 0.",
+        "inputType": "binary",
+        "binaryPropertyName": "attachment_0",
+        "options": {
+          "maxOutputTokens": 5000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "8dd97e6a-ccf3-4f55-b7f4-77b333c1bbcf",
+      "name": "Analyze document",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "yKgTSZLBzldqy2fC",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        96,
+        -128
+      ],
+      "id": "dd32d54b-e966-447a-a585-2b65d146fccb",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1HIzrrdlPBUMt1GHTz-0jm068RLceEWJiD84stgdY9eY",
+          "mode": "list",
+          "cachedResultName": "Database Invoice Penagihan Hotel Aston",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HIzrrdlPBUMt1GHTz-0jm068RLceEWJiD84stgdY9eY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HIzrrdlPBUMt1GHTz-0jm068RLceEWJiD84stgdY9eY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "time_in": "={{ $now }}",
+            "vendor": "={{ (() => { try { let item = $('Analyze document').first().json; let parts = item.content?.parts || []; let t = ''; for(let i=parts.length-1; i>=0; i--){ if(parts[i].text && parts[i].text.includes('{')) { t = parts[i].text; break; } } if(!t) t = item.text || ''; t = t.replace(/```json/gi, '').replace(/```/g, ''); let start = t.indexOf('{'); let end = t.lastIndexOf('}'); return JSON.parse(t.substring(start, end + 1)).vendor_name || 'Cek Manual'; } catch(e) { return 'Cek Manual'; } })() }}",
+            "department": "={{ (() => { try { let item = $('Analyze document').first().json; let parts = item.content?.parts || []; let t = ''; for(let i=parts.length-1; i>=0; i--){ if(parts[i].text && parts[i].text.includes('{')) { t = parts[i].text; break; } } if(!t) t = item.text || ''; t = t.replace(/```json/gi, '').replace(/```/g, ''); let start = t.indexOf('{'); let end = t.lastIndexOf('}'); return JSON.parse(t.substring(start, end + 1)).department || 'Cek Manual'; } catch(e) { return 'Cek Manual'; } })() }}",
+            "total_bill": "={{ (() => { try { let item = $('Analyze document').first().json; let parts = item.content?.parts || []; let t = ''; for(let i=parts.length-1; i>=0; i--){ if(parts[i].text && parts[i].text.includes('{')) { t = parts[i].text; break; } } if(!t) t = item.text || ''; t = t.replace(/```json/gi, '').replace(/```/g, ''); let start = t.indexOf('{'); let end = t.lastIndexOf('}'); let rawVal = JSON.parse(t.substring(start, end + 1)).grand_total; return Number(String(rawVal).replace(/[^0-9]/g, '')) || 0; } catch(e) { return 0; } })() }}",
+            "arsip_link": "={{ $('Upload file').item.json.webViewLink }}",
+            "status": "PENDING_REVIEW"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "time_in",
+              "displayName": "time_in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "vendor",
+              "displayName": "vendor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "department",
+              "displayName": "department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_bill",
+              "displayName": "total_bill",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "arsip_link",
+              "displayName": "arsip_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        272,
+        -128
+      ],
+      "id": "f5f1738e-ac61-459f-b45f-c4c3d0542b64",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3eqxTxT8G267QQig",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c3f8dc25-f2a6-48b5-9b7b-ce0033e6621c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"
+  },
+  "nodeGroups": [],
+  "id": "dnzO8I3K0Cg1J7r9",
+  "tags": []
+}
